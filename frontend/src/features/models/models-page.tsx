@@ -254,8 +254,8 @@ export function ModelsPage() {
               {selected.size > 0 ? (
                 <>
                   <span className="mr-1 text-xs text-muted-foreground">{t("common.selectedCount", { count: selectedGroupCount })}</span>
-                  <Button variant="secondary" size="sm" onClick={() => batchUpdateMutation.mutate(true)}>{t("common.enable")}</Button>
-                  <Button variant="secondary" size="sm" onClick={() => batchUpdateMutation.mutate(false)}>{t("common.disable")}</Button>
+                  <Button variant="secondary" size="sm" disabled={batchUpdateMutation.isPending} onClick={() => batchUpdateMutation.mutate(true)}>{t("common.enable")}</Button>
+                  <Button variant="secondary" size="sm" disabled={batchUpdateMutation.isPending} onClick={() => batchUpdateMutation.mutate(false)}>{t("common.disable")}</Button>
                   <Button variant="secondary" size="sm" className="text-destructive hover:text-destructive" onClick={() => setBatchDeleteOpen(true)}>{t("common.delete")}</Button>
                 </>
               ) : null}

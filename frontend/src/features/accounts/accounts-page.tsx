@@ -1522,13 +1522,13 @@ export function AccountsPage() {
                               onConfirm={setWebConfirmationTarget}
                             />
                           ) : null}
-                          {provider === "grok_build" ? <DropdownMenuItem onClick={() => tokenMutation.mutate(account.id)}><RotateCw />{t("accounts.refreshToken")}</DropdownMenuItem> : null}
+                          {provider === "grok_build" ? <DropdownMenuItem onClick={() => tokenMutation.mutate(account.id)} disabled={tokenMutation.isPending}><RotateCw />{t("accounts.refreshToken")}</DropdownMenuItem> : null}
                           {account.cooldownUntil && new Date(account.cooldownUntil) > new Date() ? (
                             <DropdownMenuItem onClick={() => clearCooldownMutation.mutate(account.id)} disabled={clearCooldownMutation.isPending}>
                               <TimerOff />{t("accounts.clearCooldown")}
                             </DropdownMenuItem>
                           ) : null}
-                          <DropdownMenuItem onClick={() => provider === "grok_build" ? billingMutation.mutate(account.id) : quotaMutation.mutate(account.id)}><RefreshCw />{provider === "grok_build" ? t("accounts.refreshBilling") : t("accounts.refreshModeQuota")}</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => provider === "grok_build" ? billingMutation.mutate(account.id) : quotaMutation.mutate(account.id)} disabled={billingMutation.isPending || quotaMutation.isPending}><RefreshCw />{provider === "grok_build" ? t("accounts.refreshBilling") : t("accounts.refreshModeQuota")}</DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => { resetLinkedDeleteState(); setDeleting(account); }}><Trash2 />{t("common.delete")}</DropdownMenuItem>
                         </DropdownMenuContent>

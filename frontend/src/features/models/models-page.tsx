@@ -76,6 +76,13 @@ export function ModelsPage() {
     queryFn: () => listModelGroups({ page, pageSize, search: debouncedSearch, status: statusFilter, provider: providerFilter, sortBy: sort.field || undefined, sortOrder: sort.field ? sort.order : undefined }),
   });
 
+  function stepBackIfPageEmptied(removedRouteIds: ReadonlySet<string>): void {
+    const items = modelsQuery.data?.items;
+    if (!items || items.length === 0 || page <= 1) return;
+    const anyRemaining = items.some((group) => group.routes.some((route) => !removedRouteIds.has(route.id)));
+    if (!anyRemaining) setPage((current) => Math.max(1, current - 1));
+  }
+
   const accountOptionsQuery = useQuery({
     queryKey: ["models", "account-options", selectedProvider],
     queryFn: () => listModelAccountOptions(selectedProvider),
@@ -103,11 +110,11 @@ export function ModelsPage() {
       if (routes.length === 1) await deleteModel(routes[0].id);
       else await deleteModels(routes.map((route) => route.id));
     },
-    onSuccess: () => {
+    onSuccess: (_, routes) => {
+      stepBackIfPageEmptied(new Set(routes.map((route) => route.id)));
       setSelected(new Set());
       void queryClient.invalidateQueries({ queryKey: ["models"] });
       setDeleting(null);
-      setPage(1);
       toast.success(t("models.deleted"));
     },
     onError: showError,
@@ -116,9 +123,9 @@ export function ModelsPage() {
   const batchDeleteMutation = useMutation({
     mutationFn: () => deleteModels([...selected]),
     onSuccess: (result) => {
+      stepBackIfPageEmptied(new Set(selected));
       setSelected(new Set());
       setBatchDeleteOpen(false);
-      setPage(1);
       void queryClient.invalidateQueries({ queryKey: ["models"] });
       toast.success(t("models.batchDeleted", { count: result.deleted }));
     },
@@ -129,7 +136,6 @@ export function ModelsPage() {
     mutationFn: (enabled: boolean) => updateModelsEnabled([...selected], enabled),
     onSuccess: () => {
       setSelected(new Set());
-      setPage(1);
       void queryClient.invalidateQueries({ queryKey: ["models"] });
       toast.success(t("models.batchUpdated"));
     },
@@ -145,7 +151,6 @@ export function ModelsPage() {
     },
     onSuccess: (result) => {
       setSelected(new Set());
-      setPage(1);
       void queryClient.invalidateQueries({ queryKey: ["models"] });
       toast.success(t("models.synced", { count: result.synced }), { id: modelSyncToastID });
     },

@@ -534,7 +534,7 @@ const resources = {
           classAll: "全部类型", classThinking: "思考换号", class: "类型", account: "账号", status: "状态", hitCount: "命中",
           hitsAll: "全部次数", hitsMin: "命中 ≥ {{count}}",
           windows: { "1h": "近 1 小时", "6h": "近 6 小时", "24h": "近 24 小时", "7d": "近 7 天" },
-          muteSelected: "禁用所选", muteSelectedCount: "禁用所选 ({{count}})", muteConfirm: "确认禁用 {{count}} 个仍在调度的降智账号？", muting: "正在禁用账号", muted: "已禁用 {{count}} 个账号", muteFailed: "禁用失败",
+          muteSelected: "禁用所选", muteSelectedCount: "禁用所选 ({{count}})", muteConfirm: "确认禁用 {{count}} 个仍在调度的降智账号？", muteConfirmHint: "选中的账号将立即停止参与调度，可随时手动重新启用。", muting: "正在禁用账号", muted: "已禁用 {{count}} 个账号", muteFailed: "禁用失败",
           scheduling: "调度中", disabledStatus: "已禁用", deletedStatus: "已删除",
           events: "最近事件", eventsHelp: "用户请求，不含 quality-test 探针",
           noHits: "这个窗口没有降智请求", noNodes: "无节点数据", noAccounts: "没有匹配账号", noEvents: "无事件",
@@ -627,7 +627,7 @@ const resources = {
         deleted: "账号已删除",
         imported: "导入完成：新增 {{created}}，更新 {{updated}}",
         importedWithSyncFailures: "导入完成：新增 {{created}}，更新 {{updated}}；初始同步成功 {{synced}}，失败 {{syncFailed}}",
-        billingRefreshed: "额度已同步",
+        billingRefreshed: "额度已同步", quotaModeChat: "聊天", quotaModeImage: "图片", quotaModeVideo: "视频", quotaModeFast: "快速",
         authRefreshed: "账号凭据已刷新",
         allBillingRefreshed: "同步完成：成功 {{succeeded}}，失败 {{failed}}",
         allTokensRefreshed: "续期完成：成功 {{succeeded}}，失败 {{failed}}，跳过 {{skipped}}",
@@ -1661,7 +1661,7 @@ const resources = {
           classAll: "All classes", classThinking: "Thinking retry", class: "Class", account: "Account", status: "Status", hitCount: "Hits",
           hitsAll: "Any hit count", hitsMin: "Hits ≥ {{count}}",
           windows: { "1h": "Last 1 hour", "6h": "Last 6 hours", "24h": "Last 24 hours", "7d": "Last 7 days" },
-          muteSelected: "Disable selected", muteSelectedCount: "Disable selected ({{count}})", muteConfirm: "Disable {{count}} still-scheduled degraded accounts?", muting: "Disabling accounts", muted: "Disabled {{count}} accounts", muteFailed: "Failed to disable accounts",
+          muteSelected: "Disable selected", muteSelectedCount: "Disable selected ({{count}})", muteConfirm: "Disable {{count}} still-scheduled degraded accounts?", muteConfirmHint: "Selected accounts will stop being scheduled immediately. You can re-enable them at any time.", muting: "Disabling accounts", muted: "Disabled {{count}} accounts", muteFailed: "Failed to disable accounts",
           scheduling: "Scheduled", disabledStatus: "Disabled", deletedStatus: "Deleted",
           events: "Recent events", eventsHelp: "User requests; quality-test probes are excluded",
           noHits: "No degrade requests in this window", noNodes: "No node data", noAccounts: "No matching accounts", noEvents: "No events",
@@ -2314,6 +2314,7 @@ Object.assign(resources.en.translation.accounts as unknown as Record<string, str
   bindEgress: "Bind proxy", unbindEgress: "Unbind proxy", unbindEgressDescription: "Remove fixed proxy bindings from the selected accounts. They will return to the current egress routing policy.",
   bindEgressNode: "Proxy node", bindEgressEmpty: "Select a proxy node", bindEgressNoNodes: "No compatible proxy nodes are available for this account pool", egressBound: "Proxy bound", egressUnbound: "Proxy unbound", egressFilter: "Proxy binding",
   egressNodeGroup: "Proxy egress", egressNodeGroupEmpty: "No matching proxy egress for this account pool", egressSourceGroup: "Proxy source", egressSourceGroupEmpty: "No matching proxy source for this account pool", egressFilterOptionsSearch: "Search proxy egress or source", egressFilterOptionsLoadMore: "Load more proxy egress", egressFilterSourcesLoadMore: "Load more proxy sources", egressFilterOptionsLoadFailed: "Failed to load proxy filter options",
+  quotaModeChat: "Chat", quotaModeImage: "Image", quotaModeVideo: "Video", quotaModeFast: "Fast",
 });
 
 Object.assign(resources["zh-CN"].translation.accountCredential as unknown as Record<string, string>, {

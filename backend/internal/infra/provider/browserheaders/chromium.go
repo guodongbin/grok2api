@@ -34,12 +34,14 @@ func ApplyChromiumClientHints(header http.Header, userAgent string) {
 	switch {
 	case strings.Contains(lower, "windows"):
 		platform = "Windows"
-	case strings.Contains(lower, "mac os x") || strings.Contains(lower, "macintosh"):
-		platform = "macOS"
 	case strings.Contains(lower, "android"):
 		platform = "Android"
 	case strings.Contains(lower, "iphone") || strings.Contains(lower, "ipad"):
+		// iOS user agents always carry the "like Mac OS X" compatibility string,
+		// so the iOS branch must win over the macOS one.
 		platform = "iOS"
+	case strings.Contains(lower, "mac os x") || strings.Contains(lower, "macintosh"):
+		platform = "macOS"
 	case strings.Contains(lower, "linux"):
 		platform = "Linux"
 	}

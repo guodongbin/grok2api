@@ -1,0 +1,15 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "rootDirectory": "frontend",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "buildCommand": "pnpm build",
+  "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "https://$GROK2API_BACKEND_URL/api/$1" },
+    { "source": "/v1/(.*)", "destination": "https://$GROK2API_BACKEND_URL/v1/$1" },
+    { "source": "/healthz", "destination": "https://$GROK2API_BACKEND_URL/healthz" },
+    { "source": "/readyz", "destination": "https://$GROK2API_BACKEND_URL/readyz" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

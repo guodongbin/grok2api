@@ -437,6 +437,14 @@ GROK2API_DATABASE_URL='postgresql://user:password@host:5432/grok2api?sslmode=req
 
 非空的 `GROK2API_DATABASE_URL` 会覆盖 `database.postgres.dsn` 并自动选择 `postgres`；空值不会覆盖 YAML。支持 `postgres://` 和 `postgresql://`，SQLAlchemy 的 `postgresql+asyncpg://` 会返回格式迁移提示。程序不会隐式读取通用的 `DATABASE_URL`；平台只提供该变量时，可在部署清单中显式映射为 `GROK2API_DATABASE_URL: "${DATABASE_URL}"`。数据库配置优先级为：内置默认值 < `config.yaml` < `GROK2API_DATABASE_URL`。当前 CLI 没有数据库覆盖参数。
 
+### 管理端部署到 Vercel
+
+Vercel 只能托管静态管理端；Go 网关依赖长期运行的进程（后台同步、定时任务、WebSocket），无法在 Vercel 上运行。请在自有服务器（Docker Compose 或 `make run`）上运行网关，把管理端部署到 Vercel：
+
+1. 将本仓库导入 Vercel。仓库内已包含 `vercel.json`：Vite 根目录为 `frontend/`，使用 `pnpm install --frozen-lockfile` 安装、`pnpm build` 构建，并为客户端路由回退到 `index.html`。
+2. 在 Vercel 项目设置中添加环境变量 `GROK2API_BACKEND_URL`，值为网关的公开地址（不带末尾斜杠），例如 `https://gw.example.com`。Vercel 会将 `/api`、`/v1`、`/healthz`、`/readyz` 重写到该地址。
+3. 部署。管理端通过同源重写访问网关，HttpOnly 会话 Cookie 无需任何额外配置。
+
 ### 反向代理后的客户端 IP
 
 请求审计会记录规范化的客户端 IPv4 或 IPv6 地址。客户端直连 grok2api 时无需额外配置；经过 Nginx 等反向代理时，需要同时配置代理和 grok2api：

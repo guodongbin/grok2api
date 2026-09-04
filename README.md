@@ -478,6 +478,14 @@ GROK2API_DATABASE_URL='postgresql://user:password@host:5432/grok2api?sslmode=req
 
 A non-empty `GROK2API_DATABASE_URL` overrides `database.postgres.dsn` and automatically selects the `postgres` driver. An empty value is ignored. Supported URL schemes are `postgres://` and `postgresql://`; SQLAlchemy's `postgresql+asyncpg://` form is rejected with a migration hint. The application does not implicitly read the generic `DATABASE_URL`; platforms that provide it can map it explicitly with `GROK2API_DATABASE_URL: "${DATABASE_URL}"`. Database configuration precedence is built-in defaults, `config.yaml`, then `GROK2API_DATABASE_URL`. The current CLI has no database override.
 
+### Deploying the admin console to Vercel
+
+Vercel can host only the static admin console; the Go gateway itself needs long-lived processes (background sync, scheduled jobs, WebSockets) and cannot run there. Run the gateway on your own server (Docker Compose or `make run`) and host the console on Vercel:
+
+1. Import this repository into Vercel. The committed `vercel.json` sets the Vite root to `frontend/`, installs with `pnpm install --frozen-lockfile`, builds with `pnpm build`, and falls back to `index.html` for client-side routes.
+2. In the Vercel project settings, set the environment variable `GROK2API_BACKEND_URL` to your gateway's public origin without a trailing slash, for example `https://gw.example.com`. Vercel rewrites `/api`, `/v1`, `/healthz`, and `/readyz` to that origin.
+3. Deploy. The console calls the gateway same-origin through the rewrites, so its HttpOnly session cookies work unchanged.
+
 ### Client IPs behind a reverse proxy
 
 Request audits record the normalized client IPv4 or IPv6 address. Direct deployments need no extra configuration. Behind Nginx or another reverse proxy, configure both sides:

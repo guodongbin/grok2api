@@ -270,6 +270,7 @@ function ChatPanel({ apiKey, model, modelOptions, onModelChange, storageScope, t
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState("");
   const [pendingTruncate, setPendingTruncate] = useState<PendingTruncateAction | null>(null);
+  const [clearConfirm, setClearConfirm] = useState<{ source: "toolbar" } | { source: "message"; messageId: string } | null>(null);
   const streamSnapshotRef = useRef<ChatStreamSnapshot>({ text: "", reasoning: "", tools: [] });
   const streamFrameRef = useRef<number | null>(null);
   const requestControllerRef = useRef<AbortController | null>(null);
@@ -584,6 +585,10 @@ function ChatPanel({ apiKey, model, modelOptions, onModelChange, storageScope, t
       setPendingTruncate({ kind: "delete", messageId, trailingCount });
       return;
     }
+    if (messages.length === 1) {
+      setClearConfirm({ source: "message", messageId });
+      return;
+    }
     applyDeleteMessage(messageId);
   }
 
@@ -717,7 +722,7 @@ function ChatPanel({ apiKey, model, modelOptions, onModelChange, storageScope, t
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button type="button" variant="ghost" size="icon" className="rounded-full" aria-label={t("creativeConsole.clearCurrent")} onClick={clearConversation} disabled={messages.length === 0 || mutation.isPending}>
+            <Button type="button" variant="ghost" size="icon" className="rounded-full" aria-label={t("creativeConsole.clearCurrent")} onClick={() => setClearConfirm({ source: "toolbar" })} disabled={messages.length === 0 || mutation.isPending}>
               <Trash2 />
             </Button>
           </TooltipTrigger>
@@ -858,6 +863,37 @@ function ChatPanel({ apiKey, model, modelOptions, onModelChange, storageScope, t
                 : pendingTruncate?.kind === "regenerate"
                   ? t("creativeConsole.regenerate")
                 : t("creativeConsole.deleteMessage")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={clearConfirm !== null} onOpenChange={(open) => { if (!open) setClearConfirm(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {clearConfirm?.source === "message"
+                ? t("creativeConsole.clearLastMessageTitle")
+                : t("creativeConsole.clearCurrentTitle")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {clearConfirm?.source === "message"
+                ? t("creativeConsole.clearLastMessageDescription")
+                : t("creativeConsole.clearCurrentDescription")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-white hover:bg-destructive/90"
+              onClick={(event) => {
+                event.preventDefault();
+                if (clearConfirm?.source === "message") applyDeleteMessage(clearConfirm.messageId);
+                else clearConversation();
+                setClearConfirm(null);
+              }}
+            >
+              {t("common.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

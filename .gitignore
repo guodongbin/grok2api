@@ -50,3 +50,6 @@ __pycache__/
 /.tmp/
 /tmp/
 /Dockerfile.local
+
+# Hoplite platform artifacts
+/.hoplite/archive/

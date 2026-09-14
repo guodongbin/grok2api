@@ -4,11 +4,13 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { updateAccountsEnabled } from "@/features/accounts/accounts-api";
 import { getDegradeAccounts, type DegradeAccountDTO, type DegradeClass, type DegradeSummaryDTO, type DegradeWindow } from "@/features/quality-guard/quality-guard-api";
@@ -32,6 +34,7 @@ export function DegradeAccountsPanel({ softTPS, hardTPS, failClosed, minGenMs }:
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
+  const [muteConfirmOpen, setMuteConfirmOpen] = useState(false);
 
   const query = useQuery({
     queryKey: ["quality-guard-degrade-accounts", period, softTPS, hardTPS, failClosed, minGenMs, debouncedSearch, status, cls, hitsMin, page, pageSize],
@@ -103,16 +106,13 @@ export function DegradeAccountsPanel({ softTPS, hardTPS, failClosed, minGenMs }:
           <div className="flex flex-wrap items-center gap-1.5">
             <div className="relative">
               <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-              <Input className="h-8 w-44 pl-8" value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); setSelected(new Set()); }} placeholder={t("qualityGuard.degrade.search")} />
+              <Input className="h-8 w-44 pl-8" aria-label={t("qualityGuard.degrade.search")} value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); setSelected(new Set()); }} placeholder={t("qualityGuard.degrade.search")} />
             </div>
             <FilterSelect value={period} onChange={(value) => { setSelected(new Set()); setPage(1); setPeriod(value as DegradeWindow); }} items={[["1h", t("qualityGuard.degrade.windows.1h")], ["6h", t("qualityGuard.degrade.windows.6h")], ["24h", t("qualityGuard.degrade.windows.24h")], ["7d", t("qualityGuard.degrade.windows.7d")]]} />
             <FilterSelect value={status} onChange={(value) => { setStatus(value as "all" | "enabled" | "disabled" | "deleted"); setPage(1); setSelected(new Set()); }} items={[["all", t("qualityGuard.degrade.statusAll")], ["enabled", t("qualityGuard.degrade.statusOn")], ["disabled", t("qualityGuard.degrade.statusOff")], ["deleted", t("qualityGuard.degrade.statusDeleted")]]} />
             <FilterSelect value={cls} onChange={(value) => { setCls(value as "all" | DegradeClass); setPage(1); setSelected(new Set()); }} items={[["all", t("qualityGuard.degrade.classAll")], ["missing_thinking", t("qualityGuard.degrade.classThinking")], ["buffered_burst", "burst"], ["soft_tps", "soft"], ["hard_tps", "hard"]]} />
             <FilterSelect value={String(hitsMin)} onChange={(value) => { setHitsMin(Number(value)); setPage(1); setSelected(new Set()); }} items={[["1", t("qualityGuard.degrade.hitsAll")], ["2", t("qualityGuard.degrade.hitsMin", { count: 2 })], ["3", t("qualityGuard.degrade.hitsMin", { count: 3 })], ["5", t("qualityGuard.degrade.hitsMin", { count: 5 })], ["10", t("qualityGuard.degrade.hitsMin", { count: 10 })]]} />
-            <Button type="button" variant="secondary" size="sm" className="bg-destructive/10 text-destructive hover:bg-destructive/15 hover:text-destructive" disabled={selectedRows.length === 0 || busy} onClick={() => {
-              if (!window.confirm(t("qualityGuard.degrade.muteConfirm", { count: selectedRows.length }))) return;
-              muteMutation.mutate(selectedRows.map((account) => account.id));
-            }}>
+            <Button type="button" variant="secondary" size="sm" className="bg-destructive/10 text-destructive hover:bg-destructive/15 hover:text-destructive" disabled={selectedRows.length === 0 || busy} onClick={() => setMuteConfirmOpen(true)}>
               <PowerOff />{selectedRows.length ? t("qualityGuard.degrade.muteSelectedCount", { count: selectedRows.length }) : t("qualityGuard.degrade.muteSelected")}
             </Button>
             <Button type="button" variant="ghost" size="icon" className="size-8" onClick={() => void query.refetch()} disabled={query.isFetching} aria-label={t("common.refresh")}>
@@ -197,6 +197,27 @@ export function DegradeAccountsPanel({ softTPS, hardTPS, failClosed, minGenMs }:
           </div>
         ) : null}
       </section>
+
+      <AlertDialog open={muteConfirmOpen} onOpenChange={(open) => { if (!open && !busy) setMuteConfirmOpen(false); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("qualityGuard.degrade.muteConfirm", { count: selectedRows.length })}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("qualityGuard.degrade.muteConfirmHint")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={busy}>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-white hover:bg-destructive/90" disabled={busy} onClick={(event) => {
+              event.preventDefault();
+              muteMutation.mutate(selectedRows.map((account) => account.id));
+              setMuteConfirmOpen(false);
+            }}>
+              {busy ? <Spinner /> : null}{t("qualityGuard.degrade.muteSelected")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <section className="overflow-hidden rounded-lg bg-card">
         <div className="border-b px-4 py-4 sm:px-5">

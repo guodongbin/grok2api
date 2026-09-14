@@ -55,6 +55,7 @@ export function EgressNodes({ title, clearanceMode }: { title: string; clearance
   const [assignmentFilter, setAssignmentFilter] = useState("");
   const [selected, setSelected] = useState<Map<string, EgressNodeDTO>>(() => new Map());
   const [batchDeleteOpen, setBatchDeleteOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<EgressNodeDTO | null>(null);
   const [cleanupOpen, setCleanupOpen] = useState(false);
   const [profileLibraryOpen, setProfileLibraryOpen] = useState(false);
   const [profileLibraryCreate, setProfileLibraryCreate] = useState(false);
@@ -334,7 +335,7 @@ export function EgressNodes({ title, clearanceMode }: { title: string; clearance
                       <DropdownMenuSeparator />
                       {clearanceMode !== "manual" && !node.accountBoundProxy && (node.scope === "grok_web" || node.scope === "grok_web_asset" || node.scope === "grok_console") ? <DropdownMenuItem disabled={refreshClearance.isPending} onClick={() => refreshClearance.mutate(node.id)}><RefreshCw />{t("settings.egress.refreshClearance")}</DropdownMenuItem> : null}
                       <DropdownMenuItem disabled={testNode.isPending || !node.proxyConfigured} onClick={() => testNode.mutate(node.id)}><RefreshCw />{t("settings.egress.test")}</DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => remove.mutate(node.id)}><Trash2 />{t("common.delete")}</DropdownMenuItem>
+                      <DropdownMenuItem className="text-destructive focus:text-destructive" disabled={remove.isPending} onClick={() => setDeleteTarget(node)}><Trash2 />{t("common.delete")}</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableActionCell>
@@ -357,6 +358,18 @@ export function EgressNodes({ title, clearanceMode }: { title: string; clearance
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter><AlertDialogCancel disabled={removeMany.isPending}>{t("common.cancel")}</AlertDialogCancel><AlertDialogAction className="bg-destructive text-white hover:bg-destructive/90" disabled={removeMany.isPending} onClick={(event) => { event.preventDefault(); removeMany.mutate(); }}>{removeMany.isPending ? <Spinner /> : null}{t("common.delete")}</AlertDialogAction></AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={deleteTarget !== null} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("settings.egress.deleteTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("settings.egress.deleteDescription", { name: deleteTarget?.name ?? "", accounts: deleteTarget?.assignedAccountCount ?? 0 })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter><AlertDialogCancel disabled={remove.isPending}>{t("common.cancel")}</AlertDialogCancel><AlertDialogAction className="bg-destructive text-white hover:bg-destructive/90" disabled={remove.isPending} onClick={(event) => { event.preventDefault(); if (deleteTarget) remove.mutate(deleteTarget.id); setDeleteTarget(null); }}>{remove.isPending ? <Spinner /> : null}{t("common.delete")}</AlertDialogAction></AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 

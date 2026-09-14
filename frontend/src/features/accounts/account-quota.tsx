@@ -110,6 +110,12 @@ const imagineQuotaModes = [
   { mode: "video_720p", labelKey: "imagineModeVideo720p" as const },
 ] as const;
 
+const consoleQuotaModes = [
+  { mode: "console", labelKey: "quotaModeChat" as const },
+  { mode: "console_image", labelKey: "quotaModeImage" as const },
+  { mode: "console_video", labelKey: "quotaModeVideo" as const },
+] as const;
+
 function imagineWindowsOf(windows: WebQuotaWindow[]): WebQuotaWindow[] {
   const known: Set<string> = new Set(imagineQuotaModes.map((item) => item.mode));
   return windows.filter((window) => known.has(window.mode));
@@ -119,11 +125,7 @@ export function ConsoleQuota({ windows, locale }: { windows: NonNullable<Account
   const { t } = useTranslation();
   if (windows.length === 0) return <span className="text-xs text-muted-foreground">{t("accounts.quotaNotSynced")}</span>;
   const windowsByMode = new Map(windows.map((window) => [window.mode, window]));
-  const modes = [
-    { mode: "console", label: "Chat" },
-    { mode: "console_image", label: "Image" },
-    { mode: "console_video", label: "Video" },
-  ] as const;
+  const modes = consoleQuotaModes.map(({ mode, labelKey }) => ({ mode, label: t(`accounts.${labelKey}`) }));
   return (
     <div className="grid w-full min-w-0 grid-cols-[2fr_1fr_1fr] divide-x divide-border/70">
       {modes.map(({ mode, label }) => {
@@ -147,7 +149,7 @@ export function WebQuota({ windows, locale, tier }: { windows: NonNullable<Accou
   const mainBlock = (() => {
     if (weekly) return <WeeklyWebQuota window={weekly} locale={locale} t={t} />;
     const fast = windowsByMode.get("fast");
-    if (tier === "basic" && fast) return <WebQuotaMode mode="Fast" window={fast} locale={locale} />;
+    if (tier === "basic" && fast) return <WebQuotaMode mode={t("accounts.quotaModeFast")} window={fast} locale={locale} />;
     return (
       <div className="grid w-full min-w-0 grid-cols-4 divide-x divide-border/70">
         {visibleWebQuotaModes.map((mode) => {

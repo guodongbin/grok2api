@@ -4,6 +4,7 @@ import { useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -246,6 +247,7 @@ export function EgressSources({ scopeLabel }: { scopeLabel: (scope: EgressScope)
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
   const [sourceEditing, setSourceEditing] = useState<EgressSourceDTO | null | undefined>(undefined);
+  const [sourceDeleteTarget, setSourceDeleteTarget] = useState<EgressSourceDTO | null>(null);
   const [sourceForm, setSourceForm] = useState<SourceForm>(emptySource);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
@@ -351,7 +353,7 @@ export function EgressSources({ scopeLabel }: { scopeLabel: (scope: EgressScope)
                   <DropdownMenuItem disabled={syncSource.isPending} onClick={() => syncSource.mutate(source.id)}><RefreshCw />{t("settings.egress.sync")}</DropdownMenuItem>
                   <DropdownMenuItem onClick={() => openSource(source)}><Pencil />{t("common.edit")}</DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-destructive focus:text-destructive" disabled={removeSource.isPending} onClick={() => removeSource.mutate(source.id)}><Trash2 />{t("common.delete")}</DropdownMenuItem>
+                  <DropdownMenuItem className="text-destructive focus:text-destructive" disabled={removeSource.isPending} onClick={() => setSourceDeleteTarget(source)}><Trash2 />{t("common.delete")}</DropdownMenuItem>
                 </DropdownMenuContent></DropdownMenu>
               </TableActionCell>
             </TableRow>
@@ -377,6 +379,18 @@ export function EgressSources({ scopeLabel }: { scopeLabel: (scope: EgressScope)
           </form>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={sourceDeleteTarget !== null} onOpenChange={(open) => { if (!open) setSourceDeleteTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("settings.egress.deleteSourceTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("settings.egress.deleteSourceDescription", { name: sourceDeleteTarget?.name ?? "" })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter><AlertDialogCancel disabled={removeSource.isPending}>{t("common.cancel")}</AlertDialogCancel><AlertDialogAction className="bg-destructive text-white hover:bg-destructive/90" disabled={removeSource.isPending} onClick={(event) => { event.preventDefault(); if (sourceDeleteTarget) removeSource.mutate(sourceDeleteTarget.id); setSourceDeleteTarget(null); }}>{removeSource.isPending ? <Spinner /> : null}{t("common.delete")}</AlertDialogAction></AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </section>
   );
 }
